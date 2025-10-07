@@ -80,7 +80,7 @@
         <h2>Sign Up</h2>
         <?php
         session_start();
-        include 'db.php';
+       include './includes/conn.php';
 
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $role = $_POST['role'];

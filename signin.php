@@ -79,8 +79,8 @@
     <div class="form-container">
         <h2>Sign In</h2>
         <?php
-        session_start();
-        include 'db.php';
+    session_start();
+    include './includes/conn.php';
 
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $email = $_POST['email'];
