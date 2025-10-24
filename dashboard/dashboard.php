@@ -21,7 +21,7 @@ include "../includes/indexHeader.php";
             </div>
             <h1>
               <?php
-              $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : null;
+              $id_user = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
               $sql  = "select * from applied_jobposts where id_user = '$id_user'";
               $query = $conn->query($sql);
               echo $query->num_rows;
@@ -35,7 +35,7 @@ include "../includes/indexHeader.php";
             </div>
             <h1>
               <?php
-              $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : null;
+              $id_user = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
               $sql  = "select * from saved_jobposts where id_user = '$id_user'";
               $query = $conn->query($sql);
               echo $query->num_rows;

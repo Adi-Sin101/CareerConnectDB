@@ -1,6 +1,6 @@
 <?php
 // Database configuration
-$servername = "localhost";
+$servername = "localhost:4306";
 $username = "root"; // Default XAMPP username
 $password = ""; // Default XAMPP password
 $dbname = "jobportal";

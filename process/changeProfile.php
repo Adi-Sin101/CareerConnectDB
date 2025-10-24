@@ -11,7 +11,7 @@ if (isset($_SESSION['role_id'])) {
     $role = $_SESSION['role_id'];
     if ($role == 1 && isset($_POST['myProfile'])) {
         // Jobseeker update
-        $id_user = $_SESSION['id_user'] ?? $_SESSION['user_id'];
+        $id_user = $_SESSION['user_id'];
         $fullname = clean($conn, $_POST['fullname']);
         $email = clean($conn, $_POST['email']);
         $aboutme = clean($conn, $_POST['aboutme']);
@@ -31,7 +31,7 @@ if (isset($_SESSION['role_id'])) {
     }
     if ($role == 2 && isset($_POST['companyProfile'])) {
         // Company update
-        $id_company = $_SESSION['id_company'] ?? $_SESSION['user_id'];
+        $id_company = $_SESSION['user_id'];
         $companyname = clean($conn, $_POST['companyname']);
         $email = clean($conn, $_POST['email']);
         $aboutme = clean($conn, $_POST['aboutme']);

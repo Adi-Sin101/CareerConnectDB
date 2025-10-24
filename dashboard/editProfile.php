@@ -11,7 +11,7 @@
       <!-- Profile Section: Jobseeker -->
       <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
         <?php
-          $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null);
+          $id_user = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
           if ($id_user) {
             $sql = "select * from users where id_user='$id_user'";
             $query = $conn->query($sql);

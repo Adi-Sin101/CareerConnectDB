@@ -3,8 +3,8 @@
     <?php
     $role_id = $_SESSION['role_id'] ?? null;
 
-    if ($role_id == 1 && isset($_SESSION['id_user'])) {
-        $id_user = $_SESSION['id_user'];
+    if ($role_id == 1 && isset($_SESSION['user_id'])) {
+        $id_user = $_SESSION['user_id'];
         $sql = "SELECT fullname FROM users WHERE id_user='$id_user'";
         $row = $conn->query($sql)->fetch_assoc();
         $displayName = $row['fullname'] ?? 'User';

@@ -19,10 +19,9 @@
       if (session_status() === PHP_SESSION_NONE) {
         session_start();
       }
-      if (isset($_SESSION['email'])) {
-        $username = explode('@', $_SESSION['email'])[0];
+      if (isset($_SESSION['fullname'])) {
         echo '<div class="dropdown">';
-        echo '<button class="dropdown-btn">Hi, ' . htmlspecialchars($username) . ' <i class="fa-solid fa-chevron-down"></i></button>';
+        echo '<button class="dropdown-btn">Welcome, ' . htmlspecialchars($_SESSION['fullname']) . ' <i class="fa-solid fa-chevron-down"></i></button>';
         echo '<div class="dropdown-content">';
         echo '<a href="/CareerConnectDB/dashboard/dashboard.php"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a>';
         echo '<a href="/CareerConnectDB/dashboard/editProfile.php"><i class="fa-solid fa-user"></i> My Profile</a>';

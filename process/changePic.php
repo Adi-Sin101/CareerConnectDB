@@ -14,8 +14,8 @@ $uploadDir = '../assets/images/';
 $error = '';
 $success = false;
 
-if (isset($_POST['myPic']) && isset($_SESSION['id_user'])) {
-  $id_user = $_SESSION['id_user'];
+if (isset($_POST['myPic']) && isset($_SESSION['user_id'])) {
+  $id_user = $_SESSION['user_id'];
   if (isset($_FILES['picture']) && $_FILES['picture']['error'] == 0) {
     $filename = getUniqueFilename($_FILES['picture']['name'], 'user_');
     if (move_uploaded_file($_FILES['picture']['tmp_name'], $uploadDir . $filename)) {

@@ -108,14 +108,17 @@
                     $_SESSION['user_id'] = $row['id_user'];
                     $_SESSION['fullname'] = $row['fullname'];
                     $_SESSION['role_id'] = $row['role_id'];
+                    $_SESSION['email'] = $email;
                     $logged_in = true;
                 }
             } elseif ($result_company->num_rows > 0) {
                 $row = $result_company->fetch_assoc();
                 if (password_verify($password, $row['password'])) {
+                    $_SESSION['id_company'] = $row['id_company'];
                     $_SESSION['user_id'] = $row['id_company'];
                     $_SESSION['fullname'] = $row['companyname'];
                     $_SESSION['role_id'] = $row['role_id'];
+                    $_SESSION['email'] = $email;
                     $logged_in = true;
                 }
             }

@@ -8,8 +8,8 @@
   <title>Job Portal</title>
 
   <!-- css files -->
-  <link rel="stylesheet" href="../assets/css/styles.css">
-  <link rel="stylesheet" href="../assets/css/responsive.css">
+  <link rel="stylesheet" href="/CareerConnectDB/assets/css/styles.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="/CareerConnectDB/assets/css/responsive.css?v=<?php echo time(); ?>">
 
   <!-- Google fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
