@@ -14,31 +14,6 @@ SET time_zone = "+00:00";
 
 -- --------------------------------------------------------
 
---
--- Table structure for table `admin`
---
-
-CREATE TABLE `admin` (
-  `id_admin` int(11) NOT NULL,
-  `password` varchar(250) NOT NULL,
-  `fullname` text DEFAULT NULL,
-  `profile_pic` text DEFAULT 'user.png',
-  `email` text NOT NULL,
-  `createdat` date NOT NULL,
-  `gender` text DEFAULT NULL,
-  `dob` date DEFAULT NULL,
-  `address` text DEFAULT NULL,
-  `role_id` int(11) NOT NULL DEFAULT 3,
-  `contactno` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `admin`
---
-
-INSERT INTO `admin` (`id_admin`, `password`, `fullname`, `profile_pic`, `email`, `createdat`, `gender`, `dob`, `address`, `role_id`, `contactno`) VALUES
-(1, '$2y$10$N/k4/DWuDzTXBrpiYDsO1.59tXkKQuLXcxB.eSrvdknLyMssxZYii', 'admin sabbir', '21560ff720ef5c73fa38ae6923adf1c5shreemangal.jpg', 'adminsabbir@gmail.com', '0000-00-00', 'Male', '1995-06-07', 'Dhaka', 3, '01510151265');
-
 -- --------------------------------------------------------
 
 --
@@ -441,12 +416,6 @@ INSERT INTO `users` (`id_user`, `fullname`, `email`, `password`, `address`, `hea
 --
 
 --
--- Indexes for table `admin`
---
-ALTER TABLE `admin`
-  ADD PRIMARY KEY (`id_admin`);
-
---
 -- Indexes for table `company`
 --
 ALTER TABLE `company`
@@ -497,12 +466,6 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `admin`
---
-ALTER TABLE `admin`
-  MODIFY `id_admin` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `company`

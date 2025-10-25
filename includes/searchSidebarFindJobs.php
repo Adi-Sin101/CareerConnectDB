@@ -21,6 +21,7 @@
       </form>
     </div>
   </div>
+
   <div class="location-search-container">
     <div class="search-form-container">
       <form method="GET" action="findJobs.php">
@@ -34,7 +35,13 @@
             <select id="select-category" name="location">
               <option value="">All Location</option>
               <?php
-              $districtOrCitySql = "SELECT * from districts_or_cities";
+              // INNER JOIN + DISTINCT
+              $districtOrCitySql = "
+                SELECT DISTINCT d.id, d.name
+                FROM districts_or_cities AS d
+                INNER JOIN job_post AS jp ON jp.city_id = d.id
+                ORDER BY d.name ASC
+              ";
               $districtOrCityQuery = $conn->query($districtOrCitySql);
               while ($districtOrCity = $districtOrCityQuery->fetch_assoc()) {
               ?>
@@ -48,6 +55,7 @@
       </form>
     </div>
   </div>
+
   <div class="category-search-container">
     <div class="search-form-container">
       <form method="GET" action="findJobs.php">
@@ -61,11 +69,18 @@
             <select id="select-category" name="category">
               <option value="">All Categories</option>
               <?php
-              $jobCategorySql = "SELECT * from industry";
+              // LEFT JOIN + GROUP BY + COUNT
+              $jobCategorySql = "
+                SELECT i.id, i.name, COUNT(jp.id_jobpost) AS total_jobs
+                FROM industry AS i
+                LEFT JOIN job_post AS jp ON jp.industry_id = i.id
+                GROUP BY i.id, i.name
+                ORDER BY total_jobs DESC
+              ";
               $jobCategoryQuery = $conn->query($jobCategorySql);
               while ($jobCategory = $jobCategoryQuery->fetch_assoc()) {
               ?>
-                <option value="<?php echo $jobCategory['id'] ?>" <?php echo (isset($_GET['category']) && $_GET['category'] == $jobCategory['id']) ? 'selected' : ''; ?>><?php echo $jobCategory['name'] ?></option>
+                <option value="<?php echo $jobCategory['id'] ?>" <?php echo (isset($_GET['category']) && $_GET['category'] == $jobCategory['id']) ? 'selected' : ''; ?>><?php echo $jobCategory['name'] ?> (<?php echo $jobCategory['total_jobs'] ?>)</option>
               <?php } ?>
             </select>
             <span class="custom-arrow"></span>
@@ -75,6 +90,7 @@
       </form>
     </div>
   </div>
+
   <div class="job-type-search-container">
     <div class="search-form-container">
       <form method="GET" action="findJobs.php">
@@ -88,11 +104,18 @@
             <select id="select-category" name="job_type">
               <option value="">All Job Types</option>
               <?php
-              $jobTypeSql = "SELECT * from job_type";
+              // LEFT JOIN + GROUP BY + COUNT + ALIAS
+              $jobTypeSql = "
+                SELECT jt.id, jt.type, COUNT(jp.id_jobpost) AS total_jobs
+                FROM job_type AS jt
+                LEFT JOIN job_post AS jp ON jp.job_status = jt.id
+                GROUP BY jt.id, jt.type
+                ORDER BY jt.type ASC
+              ";
               $jobTypeQuery = $conn->query($jobTypeSql);
               while ($jobType = $jobTypeQuery->fetch_assoc()) {
               ?>
-                <option value="<?php echo $jobType['id'] ?>" <?php echo (isset($_GET['job_type']) && $_GET['job_type'] == $jobType['id']) ? 'selected' : ''; ?>><?php echo $jobType['type'] ?></option>
+                <option value="<?php echo $jobType['id'] ?>" <?php echo (isset($_GET['job_type']) && $_GET['job_type'] == $jobType['id']) ? 'selected' : ''; ?>><?php echo $jobType['type'] ?> (<?php echo $jobType['total_jobs'] ?>)</option>
               <?php } ?>
             </select>
             <span class="custom-arrow"></span>

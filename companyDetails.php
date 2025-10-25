@@ -6,32 +6,36 @@
   <?php if (isset($_GET['key']) && isset($_GET['id'])) :
     $id_company = $_GET['id'];
 
-    $sql = "SELECT * FROM company WHERE id_company='$id_company'";
+    // --- Company Info with JOINs ---
+    $sql = "
+    SELECT c.*, s.name AS state_name, d.name AS city_name, i.name AS industry_name
+    FROM company c
+    JOIN states s ON c.state_id = s.id
+    JOIN districts_or_cities d ON c.city_id = d.id
+    JOIN industry i ON c.industry_id = i.id
+    WHERE c.id_company = '$id_company'
+    ";
     $query = $conn->query($sql);
     $row = $query->fetch_assoc();
 
-    //getting state info
-    $division_or_state_id = $row['state_id'];
-    $sql1 =  "SELECT * FROM states WHERE id = '$division_or_state_id'";
-    $query1 = $conn->query($sql1);
-    $row1 = $query1->fetch_assoc();
+    // --- Reviews Count & Average ---
+    $reviewStatsSql = "
+    SELECT COUNT(*) AS total_reviews
+    FROM company_reviews
+    WHERE company_id = '$id_company'
+    ";
+    $reviewStats = $conn->query($reviewStatsSql)->fetch_assoc();
+    $reviewStats['avg_rating'] = 'N/A'; // Rating not stored in database
 
-    //getting city info
-    $district_or_city_id = $row['city_id'];
-    $sql2 =  "SELECT * FROM districts_or_cities WHERE id = '$district_or_city_id'";
-    $query2 = $conn->query($sql2);
-    $row2 = $query2->fetch_assoc();
-
-    //getting industry info
-    $industry_id = $row['industry_id'];
-    $sql3 =  "SELECT * FROM industry WHERE id = '$industry_id'";
-    $query3 = $conn->query($sql3);
-    $row3 = $query3->fetch_assoc();
-
-    // getting reviews info
-    $sql5 = "SELECT * FROM company_reviews where company_id = '$id_company'";
+    // --- Reviews Details with JOIN ---
+    $sql5 = "
+    SELECT r.review, r.createdby, u.fullname, u.profile_pic
+    FROM company_reviews r
+    JOIN users u ON r.createdby = u.id_user
+    WHERE r.company_id = '$id_company'
+    ORDER BY r.id DESC
+    ";
     $query5  = $conn->query($sql5);
-
 
   ?>
     <div id="browse-company-details">
@@ -47,11 +51,11 @@
                   <h3> <?php echo $row['companyname'] ?> </h3>
                   <div class="job-category-info">
                     <i class="fa-solid fa-briefcase"></i>
-                    <span><?php echo $row3['name'] . " industry" ?></span>
+                    <span><?php echo $row['industry_name'] . " industry" ?></span>
                   </div>
                   <div class="location-info">
                     <i class="fa-solid fa-location-dot"></i>
-                    <span><?php echo $row1['name'] . ", " . $row2['name'] ?></span>
+                    <span><?php echo $row['state_name'] . ", " . $row['city_name'] ?></span>
                   </div>
                 </div>
               </div>
@@ -83,45 +87,42 @@
               <h3>Company Jobs Posts</h3>
             </div>
             <?php
-            $sql = "SELECT * from job_post  where id_company = '$id_company' ";
+            // --- Job Posts with JOINs & ORDER BY ---
+            $sql = "
+            SELECT j.*, dc.name AS city_name, i.name AS industry_name, jt.type AS job_type, c.profile_pic
+            FROM job_post j
+            JOIN districts_or_cities dc ON j.city_id = dc.id
+            JOIN industry i ON j.industry_id = i.id
+            JOIN job_type jt ON j.job_status = jt.id
+            JOIN company c ON j.id_company = c.id_company
+            WHERE j.id_company = '$id_company'
+            ORDER BY j.createdat DESC
+            ";
             $result = $conn->query($sql);
 
             while ($row4 = $result->fetch_assoc()) {
               $job_id = $row4['id_jobpost'];
               $jobtitle = $row4['jobtitle'];
-              $city_id = $row4['city_id'];
-              $industry_id = $row4['industry_id'];
-              $job_status_id = $row4['job_status'];
               $minimum_salary = $row4['minimumsalary'];
               $maximum_salary = $row4['maximumsalary'];
               $create_date = $row4['createdat'];
-
               $hash = md5($job_id);
-              $location = $conn->query("SELECT name from districts_or_cities where id = '$city_id'");
-              $job_category = $conn->query("SELECT name from industry where id = '$industry_id'");
-              $job_type = $conn->query("SELECT type from job_type where id = '$job_status_id'");
-              $profile_pic = $conn->query("SELECT profile_pic from company where id_company = '$id_company'");
-
-              $location = $location->fetch_assoc();
-              $job_category = $job_category->fetch_assoc();
-              $job_type = $job_type->fetch_assoc();
-              $profile_pic = $profile_pic->fetch_assoc();
             ?>
               <a href="./jobDetails.php?key=<?php echo $hash . '&id=' . $job_id ?>" class="job-item-container">
                 <div class="profile-container">
-                  <img src="../assets/images/<?php echo $profile_pic['profile_pic'] ?>" alt="">
+                  <img src="../assets/images/<?php echo $row4['profile_pic'] ?>" alt="">
                 </div>
                 <div class="job-info-container">
                   <div class="job-info-left-side">
                     <div class="job-status">
                       <i class="fa-solid fa-briefcase"></i>
-                      <span><?php echo $job_type['type'] ?></span>
+                      <span><?php echo $row4['job_type'] ?></span>
                     </div>
                     <h3> <?php echo $jobtitle; ?> </h3>
                     <div class="others-info">
                       <div class="job-category-info">
                         <i class="fa-solid fa-briefcase"></i>
-                        <span><?php echo $job_category['name'] ?></span>
+                        <span><?php echo $row4['industry_name'] ?></span>
                       </div>
                       <div class="salary-info">
                         <i class="fa-solid fa-money-check-dollar"></i>
@@ -129,7 +130,7 @@
                       </div>
                       <div class="location-info">
                         <i class="fa-solid fa-location-dot"></i>
-                        <span><?php echo $location['name'] ?></span>
+                        <span><?php echo $row4['city_name'] ?></span>
                       </div>
                     </div>
                     <div class="date-info">
@@ -143,9 +144,9 @@
                     $now = date_create(date("y-m-d"));
 
                     if ($now < $deadline) {
-                      echo "<span class=" . "validity-active" . ">Active</span>";
+                      echo "<span class='validity-active'>Active</span>";
                     } else {
-                      echo "<span class=" . "validity-expired" . ">Expired</span>";
+                      echo "<span class='validity-expired'>Expired</span>";
                     }
                     ?>
                   </div>
@@ -159,49 +160,33 @@
               <span class="icon-container">
                 <i class="fa-solid fa-star"></i>
               </span>
-              <h3>Review Company - Reviewed (<?php echo $query5->num_rows; ?>)</h3>
+              <h3>Review Company - Reviewed (<?php echo $reviewStats['total_reviews']; ?>) | Average Rating: <?php echo $reviewStats['avg_rating'] ?: 'N/A'; ?></h3>
             </div>
             <div class="review-section">
               <?php
               while ($row5 = $query5->fetch_assoc()) {
-                $id_user = $row5['createdby'];
-                $review  = $row5['review'];
-                $fullname = $conn->query("SELECT fullname FROM users WHERE id_user = '$id_user'");
-                $profile_pic  = $conn->query("select profile_pic from users where id_user = '$id_user'");
-                $fullname  = $fullname->fetch_assoc();
-                $profile_pic  = $profile_pic->fetch_assoc();
               ?>
                 <div class="review-item">
                   <div class="review-item-profile-container">
                     <?php
-                    if ($profile_pic !== null && isset($profile_pic['profile_pic'])) {
-                      echo '<img  src="./assets/images/' . $profile_pic['profile_pic'] . '" alt="Profile Picture">';
+                    if (!empty($row5['profile_pic'])) {
+                      echo '<img src="./assets/images/' . $row5['profile_pic'] . '" alt="Profile Picture">';
                     } else {
                       echo "<img src='./assets/images/user.png' alt='Default Profile Picture'>";
                     }
                     ?>
-
-                    <p><?php echo $fullname['fullname']; ?></p>
-
+                    <p><?php echo $row5['fullname']; ?></p>
                   </div>
                   <div class="review-item-review-container">
-                    <p>"<?php echo $review; ?>"</p>
+                    <p>"<?php echo $row5['review']; ?>"</p>
                   </div>
                 </div>
-              <?php
-              }
-              ?>
+              <?php } ?>
             </div>
             <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1) : ?>
               <div class="review-container">
-                <!-- <div class="post">
-                  <div class="text">Thanks for rating us!</div>
-                  <div class="edit">EDIT</div>
-                </div> -->
-
-
                 <div class="star-widget">
-                  <form action="./process/submitReview.php?key=<?php echo md5($id_company) . "&cid=" . $id_company  ?>" method="post">
+                  <form action="./process/submitReview.php?key=<?php echo md5($id_company) . "&cid=" . $id_company ?>" method="post">
                     <input type="radio" name="rate5" id="rate-5">
                     <label for="rate-5" class="fas fa-star"></label>
                     <input type="radio" name="rate4" id="rate-4">
@@ -212,7 +197,6 @@
                     <label for="rate-2" class="fas fa-star"></label>
                     <input type="radio" name="rate1" id="rate-1">
                     <label for="rate-1" class="fas fa-star"></label>
-
 
                     <div class="review-form">
                       <header></header>
@@ -237,7 +221,7 @@
               </div>
               <ul class="information-list-container">
                 <li class="information-list-item">
-                  <div class=" icon-container">
+                  <div class="icon-container">
                     <i class="fa-solid fa-phone"></i>
                   </div>
                   <div class="info-container">
@@ -246,7 +230,7 @@
                   </div>
                 </li>
                 <li class="information-list-item">
-                  <div class=" icon-container">
+                  <div class="icon-container">
                     <i class="fa-solid fa-envelope"></i>
                   </div>
                   <div class="info-container">
@@ -255,16 +239,16 @@
                   </div>
                 </li>
                 <li class="information-list-item">
-                  <div class=" icon-container">
+                  <div class="icon-container">
                     <i class="fa-solid fa-location-dot"></i>
                   </div>
                   <div class="info-container">
                     <span>Location:</span>
-                    <span><?php echo $row2['name'] ?></span>
+                    <span><?php echo $row['city_name'] ?></span>
                   </div>
                 </li>
                 <li class="information-list-item">
-                  <div class=" icon-container">
+                  <div class="icon-container">
                     <i class="fa-solid fa-globe"></i>
                   </div>
                   <div class="info-container">
@@ -273,7 +257,7 @@
                   </div>
                 </li>
                 <li class="information-list-item">
-                  <div class=" icon-container">
+                  <div class="icon-container">
                     <i class="fa-solid fa-building"></i>
                   </div>
                   <div class="info-container">
@@ -291,8 +275,6 @@
   <?php else :
     echo "No id is found";
   ?>
-
-
   <?php endif; ?>
   <?php include './includes/sql_terminal.php'; ?>
 </body>

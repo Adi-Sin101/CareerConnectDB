@@ -52,6 +52,7 @@ include "../includes/indexHeader.php";
             <h1>
               <?php
               $id_company = $_SESSION['id_company'];
+              // Count jobs posted by this company
               $sql = "SELECT * FROM job_post WHERE id_company = '$id_company'";
               $query = $conn->query($sql);
               echo $query->num_rows;

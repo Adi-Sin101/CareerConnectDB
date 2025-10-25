@@ -17,6 +17,7 @@
         </div>
       </div>
     </div>
+
     <section class="page-content">
       <div class="page-content-left-side">
         <?php include "./includes/searchSidebarCompany.php" ?>
@@ -24,29 +25,31 @@
 
       <div class="page-content-right-side">
         <?php
-        $sql = "SELECT * from company";
+        // INNER JOIN with multiple tables to fetch company info ---
+        $sql = "
+          SELECT 
+            c.id_company, 
+            c.companyname, 
+            c.profile_pic,
+            i.name AS industry_name, 
+            s.name AS state_name, 
+            d.name AS city_name,
+            COUNT(j.id_jobpost) AS job_count
+          FROM company c
+          LEFT JOIN industry i ON c.industry_id = i.id
+          LEFT JOIN states s ON c.state_id = s.id
+          LEFT JOIN districts_or_cities d ON c.city_id = d.id
+          LEFT JOIN job_post j ON c.id_company = j.id_company
+          GROUP BY c.id_company, c.companyname, c.profile_pic, i.name, s.name, d.name
+          ORDER BY c.companyname ASC
+        ";
+
         $query = $conn->query($sql);
-        if ($query->num_rows > 0) {
+
+        if ($query && $query->num_rows > 0) {
           while ($row = $query->fetch_assoc()) {
             $hash = md5($row['id_company']);
             $id_company = $row['id_company'];
-            $industry_id = $row['industry_id'];
-            $state_id = $row['state_id'];
-            $city_id = $row['city_id'];
-
-            $industry = $conn->query("SELECT name from industry where id = '$industry_id'")->fetch_assoc();
-            $industry_name = $industry ? $industry['name'] : 'Unknown Industry';
-
-            $division_or_state = $conn->query("SELECT name from states where id = '$state_id'")->fetch_assoc();
-            $state_name = $division_or_state ? $division_or_state['name'] : 'Unknown State';
-
-            $district_or_city = $conn->query("SELECT name from districts_or_cities where id = '$city_id'")->fetch_assoc();
-            $city_name = $district_or_city ? $district_or_city['name'] : 'Unknown City';
-
-            // Get job count for the company
-            $job_count_query = $conn->query("SELECT COUNT(*) as job_count FROM job_post WHERE id_company = '$id_company'");
-            $job_count_row = $job_count_query->fetch_assoc();
-            $job_count = $job_count_row['job_count'];
         ?>
           <a href="./companyDetails.php?key=<?php echo $hash . '&id=' . $id_company ?>" class="company-card-link">
             <div class="company-card">
@@ -58,15 +61,15 @@
                 <div class="company-details">
                   <div class="detail-item">
                     <i class="fa-solid fa-briefcase"></i>
-                    <span><?php echo $industry_name ?> Industry</span>
+                    <span><?php echo $row['industry_name'] ?? 'Unknown Industry'; ?> Industry</span>
                   </div>
                   <div class="detail-item">
                     <i class="fa-solid fa-location-dot"></i>
-                    <span><?php echo $state_name . ', ' . $city_name; ?></span>
+                    <span><?php echo ($row['state_name'] ?? 'Unknown State') . ', ' . ($row['city_name'] ?? 'Unknown City'); ?></span>
                   </div>
                   <div class="detail-item">
                     <i class="fa-solid fa-building"></i>
-                    <span><?php echo $job_count ?> Jobs Available</span>
+                    <span><?php echo $row['job_count'] ?> Jobs Available</span>
                   </div>
                 </div>
               </div>
@@ -74,10 +77,16 @@
           </a>
         <?php }
         } else {
-          echo '<div class="no-companies"><p>No companies found.</p></div>';
+
+          // Create a simple view 
+          $conn->query("
+            CREATE OR REPLACE VIEW active_companies_view AS
+            SELECT id_company, companyname FROM company WHERE active = 1
+          ");
+          echo '<div class="no-companies"><p>No companies found. (Active company view created for demonstration.)</p></div>';
         } ?>
       </div>
-      </div>
+    </section>
   </div>
 
   <?php include './includes/sql_terminal.php'; ?>

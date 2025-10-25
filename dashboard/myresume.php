@@ -12,9 +12,9 @@ include "../includes/indexHeader.php";
     <?php include "./dashboardSidebar.php"; ?>
 
     <?php if (isset($_SESSION['message'])): ?>
-      <div class="message-container <?php echo $_SESSION['messagetype']; ?>">
+      <div class="message-container <?php echo isset($_SESSION['messagetype']) ? $_SESSION['messagetype'] : 'info'; ?>">
         <div class="message-content">
-          <i class="fa-solid fa-<?php echo $_SESSION['messagetype'] == 'success' ? 'check-circle' : 'exclamation-triangle'; ?>"></i>
+          <i class="fa-solid fa-<?php echo (isset($_SESSION['messagetype']) && $_SESSION['messagetype'] == 'success') ? 'check-circle' : 'exclamation-triangle'; ?>"></i>
           <span><?php echo $_SESSION['message']; ?></span>
         </div>
         <button class="message-close" onclick="this.parentElement.style.display='none'">
@@ -27,6 +27,7 @@ include "../includes/indexHeader.php";
     <div class="resume-content-container">
       <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1 && isset($_SESSION['user_id'])) :
         $id_user = mysqli_real_escape_string($conn, $_SESSION['user_id']);
+        // Select query to find the resume for the current user
         $sql = "SELECT resume FROM users WHERE id_user = '$id_user'";
         $query = $conn->query($sql);
         $row = $query->fetch_assoc();

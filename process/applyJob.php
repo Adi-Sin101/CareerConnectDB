@@ -12,142 +12,96 @@ if (isset($_GET['id'])) {
     $id_user = $_SESSION['user_id'];
     $createdat = date("Y-m-d");
 
-    $query = $conn->query("SELECT resume from users where id_user = '$id_user'");
+    // Check if resume exists
+    $query = $conn->query("SELECT resume FROM users WHERE id_user = '$id_user'");
     $resume = $query->fetch_assoc();
 
-
-    if (!$resume['resume']) {
+    if (empty($resume['resume'])) {
       $_SESSION['message'] = "Please upload your resume first!";
-      echo $_SESSION['message'];
+      $_SESSION['messagetype'] = 'error';
       header("location: ../dashboard/myresume.php");
       exit();
     } else {
-      $sql = "insert into applied_jobposts (id_jobpost,id_user,id_company,createdat) values('$id_jobpost','$id_user','$id_company','$createdat')";
-
+      // Insert into applied_jobposts table
+      $sql = "INSERT INTO applied_jobposts (id_jobpost, id_user, id_company, createdat) 
+              VALUES ('$id_jobpost', '$id_user', '$id_company', '$createdat')";
       if ($conn->query($sql)) {
         $_SESSION['message'] = "Application submitted successfully!";
+        $_SESSION['messagetype'] = 'success';
       } else {
         $_SESSION['message'] = "Error submitting application. Please try again.";
+        $_SESSION['messagetype'] = 'error';
       }
     }
 
-    // Report Generation:
-
-    // Check if TCPDF is available
+    // === Report Generation ===
     if (file_exists('../tcpdf/tcpdf.php')) {
       require_once('../tcpdf/tcpdf.php');
 
-      // Create new PDF document
-      $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-
-      // Set document information
-      $pdf->SetCreator(PDF_CREATOR);
-      $pdf->SetAuthor('Your Name');
-      $pdf->SetTitle('Job Application Report');
-      $pdf->SetSubject('Job Application Data');
-      $pdf->SetKeywords('TCPDF, Job, Application');
-
-      // Add a page
+      // Create PDF
+      $pdf = new TCPDF();
       $pdf->AddPage();
-
-      // Set font
       $pdf->SetFont('helvetica', 'B', 16);
-
-      // Add headline
       $pdf->Cell(0, 10, 'Job Application Report', 0, 1, 'C');
       $pdf->SetFont('helvetica', '', 12);
 
-      // Fetch Data from the Database:
+      // Job details
+      $job = $conn->query("SELECT * FROM job_post WHERE id_jobpost='$id_jobpost'")->fetch_assoc();
 
-      // job details
-      $sql = "SELECT * FROM job_post WHERE id_jobpost='$id_jobpost'";
-      $query = $conn->query($sql);
-      $row = $query->fetch_assoc();
+      // Company details
+      $company = $conn->query("SELECT * FROM company WHERE id_company='$id_company'")->fetch_assoc();
 
+      // State info
+      $state = $conn->query("SELECT name FROM states WHERE id='{$job['state_id']}'")->fetch_assoc();
 
-      // company details
-      $sql1 = "SELECT * from company where id_company = '$id_company'";
-      $query1 = $conn->query($sql1);
-      $row1 = $query1->fetch_assoc();
+      // City info
+      $city = $conn->query("SELECT name FROM districts_or_cities WHERE id='{$job['city_id']}'")->fetch_assoc();
 
-      // state or division info
+      // Education info
+      $education = $conn->query("SELECT name FROM education WHERE id='{$job['edu_qualification']}'")->fetch_assoc();
 
-      $state_id = $row['state_id'];
-      $sql2 =  "SELECT * FROM states WHERE id = '$state_id'";
-      $query2 = $conn->query($sql2);
-      $row2 = $query2->fetch_assoc();
+      // Job type
+      $jobtype = $conn->query("SELECT type FROM job_type WHERE id='{$job['job_status']}'")->fetch_assoc();
 
-      // district or  city info
-      $city_id = $row['city_id'];
-      $sql3 =  "SELECT * FROM districts_or_cities WHERE id = '$city_id'";
-      $query3 = $conn->query($sql3);
-      $row3 = $query3->fetch_assoc();
+      // Industry info
+      $industry = $conn->query("SELECT name FROM industry WHERE id='{$job['industry_id']}'")->fetch_assoc();
 
-      // education info
-      $education_id = $row['edu_qualification'];
-      $sql4 =  "SELECT * FROM education WHERE id = '$education_id'";
-      $query4 = $conn->query($sql4);
-      $row4 = $query4->fetch_assoc();
+      // User info
+      $user = $conn->query("SELECT * FROM users WHERE id_user='$id_user'")->fetch_assoc();
 
-      //job status
-      $job_status = $row['job_status'];
-      $jobtype = $conn->query("SELECT type FROM job_type WHERE id = '$job_status'");
-      $jobtype = $jobtype->fetch_assoc();
-
-      // Fetch user details
-      $sql5 = "SELECT * FROM users WHERE id_user = '$id_user'";
-      $query5 = $conn->query($sql5);
-      $row5 = $query5->fetch_assoc();
-
-      // Fetch industry details;
-      $industry_id = $row['industry_id'];
-      $industry = $conn->query("SELECT name from industry where id = '$industry_id'");
-      $industry = $industry->fetch_assoc();
-
-      // Generate content
+      // Report content
       $content = "
+Job Details
+-------------------------
+Job Title: {$job['jobtitle']}
+Industry: {$industry['name']}
+Salary (Tk.): {$job['minimumsalary']} - {$job['maximumsalary']}
+Company: {$company['companyname']}
+Division: {$state['name']}
+City: {$city['name']}
+Education Required: {$education['name']}
+Job Type: {$jobtype['type']}
 
+------------------------------------------
 
-                                                                    Job Details
-                                                                        --------
+Applicant Details
+-------------------------
+Full Name: {$user['fullname']}
+Email: {$user['email']}
+Gender: {$user['gender']}
+Contact: {$user['contactno']}
+DOB: {$user['dob']}
+Address: {$user['address']}
+      ";
 
-
-
-      Job Title : {$row['jobtitle']}
-      Job-Category : {$industry['name']}
-      Salary(Tk.) : {$row['minimumsalary']} - {$row['maximumsalary']}
-      Company Name : {$row1['companyname']}
-      State/Division : {$row2['name']}
-      District/City : {$row3['name']}
-      Educational Requirement : {$row4['name']}
-      Job Type : {$jobtype['type']}
-
-
-      -------------------------------------------------------------------------------------------------------------------------------
-
-
-                                                              Applicants Details
-                                                                    -------------
-
-
-
-      Fullname : {$row5['fullname']}
-      Email : {$row5['email']}
-      Gender : {$row5['gender']}
-      Contact : {$row5['contactno']}
-      Date-Of-Birth : {$row5['dob']}
-      Address : {$row5['address']}
-  ";
-
-      // Add content to PDF
+      // Add text to PDF
       $pdf->MultiCell(0, 10, $content);
-
-      // Close and output PDF document
       $pdf->Output('job_application_report.pdf', 'I');
     } else {
-      // TCPDF not available, show success message instead
       $_SESSION['message'] = "Application submitted successfully!";
     }
   }
-  header('location: ../jobDetails.php?key=' . md5($id_jobpost) . '&id=' . $id_jobpost . '');
+
+  header("location: ../jobDetails.php?key=" . md5($id_jobpost) . "&id=" . $id_jobpost);
 }
+?>

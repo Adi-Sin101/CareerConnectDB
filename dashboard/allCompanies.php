@@ -9,7 +9,6 @@
     <div class="all-jobs-container">
       <div class="headline headline-container">
         <h3>All Companies</h3>
-        <a href="../Report Generation/Admin/report-for-companies.php" class="btn"><i class="fa-solid fa-download"></i> Report</a>
       </div>
       <div>
         <table>
@@ -65,7 +64,6 @@
                                 <td>" . $row['address'] . "</td>
                                 <td class='action-button' >
                                 <a class='btn btn-optional' href='../companyDetails.php?key=" . $hash . "&id=" . $company_id . "'>View</a>
-                                <a href='../process/deleteCompany.php?key=" . $hash . "&id=" . $company_id . "&page=admin-control' class='btn btn-optional'>Remove </a> 
                                 </td>
                                 </tr>";
               $i++;
