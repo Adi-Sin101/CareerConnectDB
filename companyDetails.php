@@ -294,14 +294,5 @@
 
 
   <?php endif; ?>
-  <!-- Footer -->
-  <div id="footer">
-    <!-- Footer Widgets -->
-    <?php include 'includes/indexFooterWidgets.php';
-    ?>
-    <!-- Footer Copyrights -->
-    <?php include 'includes/footer.php'
-    ?>
-  </div>
   <?php include './includes/sql_terminal.php'; ?>
 </body>
