@@ -141,4 +141,5 @@
       <?php include 'includes/footer.php' ?>
     </div>
   </div>
+  <?php include './includes/sql_terminal.php'; ?>
 </body>

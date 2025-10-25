@@ -137,5 +137,6 @@
   <footer>
     © <?php echo date("Y"); ?> CareerConnectDB. All rights reserved.
   </footer>
+  <?php include './includes/sql_terminal.php'; ?>
 </body>
 </html>

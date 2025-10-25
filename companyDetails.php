@@ -303,4 +303,5 @@
     <?php include 'includes/footer.php'
     ?>
   </div>
+  <?php include './includes/sql_terminal.php'; ?>
 </body>

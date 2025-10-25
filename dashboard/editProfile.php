@@ -359,5 +359,5 @@
       <?php endif; ?>
     </div>
   </div>
+  <?php include '../includes/sql_terminal.php'; ?>
 </body>
-                    <input type="text" name="website" value="<?php echo htmlspecialchars($row['website']) ?>" required>

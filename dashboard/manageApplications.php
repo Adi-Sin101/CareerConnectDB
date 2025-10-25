@@ -90,4 +90,5 @@ include "../includes/conn.php";
       } ?>
     </div>
   </div>
+  <?php include '../includes/sql_terminal.php'; ?>
 </body>

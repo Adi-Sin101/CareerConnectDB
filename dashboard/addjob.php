@@ -185,4 +185,5 @@
 
     </div>
   </div>
+  <?php include '../includes/sql_terminal.php'; ?>
 </body>

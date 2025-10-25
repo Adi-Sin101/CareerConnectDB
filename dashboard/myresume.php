@@ -93,4 +93,5 @@ include "../includes/indexHeader.php";
       document.getElementById('file-name').textContent = fileName;
     });
   </script>
+  <?php include '../includes/sql_terminal.php'; ?>
 </body>

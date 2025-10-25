@@ -80,7 +80,7 @@
         <h2>Sign Up</h2>
         <?php
         session_start();
-       include './includes/conn.php';
+        include './includes/conn.php';
 
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $role = $_POST['role'];
@@ -92,46 +92,51 @@
             if ($password !== $confirm_password) {
                 echo "<p style='color: red;'>Passwords do not match.</p>";
             } else {
-                // Check if email already exists in both tables
-                $sql_user = "SELECT id_user FROM users WHERE email = ?";
-                $stmt_user = $conn->prepare($sql_user);
-                $stmt_user->bind_param("s", $email);
-                $stmt_user->execute();
-                $result_user = $stmt_user->get_result();
+                // Subquery to check email existence in both tables using union ---
+                $sql_check = "
+                    SELECT email FROM (
+                        SELECT email FROM users
+                        UNION ALL
+                        SELECT email FROM company
+                    ) AS combined_emails
+                    WHERE email = ?
+                ";
+                $stmt_check = $conn->prepare($sql_check);
+                $stmt_check->bind_param("s", $email);
+                $stmt_check->execute();
+                $result_check = $stmt_check->get_result();
 
-                $sql_company = "SELECT id_company FROM company WHERE email = ?";
-                $stmt_company = $conn->prepare($sql_company);
-                $stmt_company->bind_param("s", $email);
-                $stmt_company->execute();
-                $result_company = $stmt_company->get_result();
-
-                if ($result_user->num_rows > 0 || $result_company->num_rows > 0) {
+                if ($result_check->num_rows > 0) {
                     echo "<p style='color: red;'>Email already registered.</p>";
                 } else {
-                    // Hash password
+                    
                     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                     $createdat = date("Y-m-d");
 
+                    //Insert with explicit column names & constraint demonstration ---
                     if ($role == 'job_seeker') {
-                        // Insert into users
-                        $sql = "INSERT INTO users (fullname, email, password, role_id, active, createdat) VALUES (?, ?, ?, 1, 1, ?)";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("ssss", $name, $email, $hashed_password, $createdat);
+                        $sql_insert = "
+                            INSERT INTO users (fullname, email, password, role_id, active, createdat)
+                            VALUES (?, ?, ?, 1, 1, ?)
+                        ";
                     } elseif ($role == 'employer') {
-                        // Insert into company
-                        $sql = "INSERT INTO company (companyname, email, password, role_id, createdAt, active) VALUES (?, ?, ?, 2, ?, 1)";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("ssss", $name, $email, $hashed_password, $createdat);
+                        $sql_insert = "
+                            INSERT INTO company (companyname, email, password, role_id, createdAt, active)
+                            VALUES (?, ?, ?, 2, ?, 1)
+                        ";
                     }
 
-                    if ($stmt->execute()) {
+                    $stmt_insert = $conn->prepare($sql_insert);
+                    $stmt_insert->bind_param("ssss", $name, $email, $hashed_password, $createdat);
+
+                    if ($stmt_insert->execute()) {
                         echo "<p style='color: green;'>Registration successful! <a href='signin.php'>Sign In</a></p>";
                     } else {
-                        echo "<p style='color: red;'>Error: " . $stmt->error . "</p>";
+                        echo "<p style='color: red;'>Error: " . $stmt_insert->error . "</p>";
                     }
+                    $stmt_insert->close();
                 }
-                $stmt_user->close();
-                $stmt_company->close();
+                $stmt_check->close();
             }
         }
         $conn->close();
@@ -166,5 +171,6 @@
             <a href="signin.php">Already have an account? Sign In</a>
         </div>
     </div>
+    <?php include './includes/sql_terminal.php'; ?>
 </body>
 </html>
